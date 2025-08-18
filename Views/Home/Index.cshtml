@@ -1,0 +1,23 @@
+@model List<Feedback>
+
+<h2>Geri Bildirimler</h2>
+
+<a href="/Home/Create">Yeni Ekle</a>
+
+<table border="1">
+    <tr>
+        <th>Ad</th>
+        <th>Email</th>
+        <th>Mesaj</th>
+        <th>Tarih</th>
+    </tr>
+    @foreach(var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.Email</td>
+            <td>@item.Message</td>
+            <td>@item.CreatedAt</td>
+        </tr>
+    }
+</table>
