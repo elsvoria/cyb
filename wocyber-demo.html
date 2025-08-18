@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ WoCyber - Gelişmiş Siber Güvenlik Platformu</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- TOTP Library for 2FA -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otplib/12.0.1/otplib-browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            --card-bg: rgba(51, 65, 85, 0.9);
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #10b981;
+            --border-color: rgba(148, 163, 184, 0.2);
+            --shadow: rgba(0, 0, 0, 0.3);
+            --hover-bg: rgba(59, 130, 246, 0.1);
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --gradient-primary: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            --gradient-secondary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(139, 92, 246, 0.3) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        /* Welcome Animation */
+        .welcome-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: all 1s ease-in-out;
+        }
+
+        .welcome-banner.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .welcome-text {
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: welcomeSlide 1s ease-out;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            text-align: center;
+            animation: welcomeSlide 1s ease-out 0.3s both;
+        }
+
+        .welcome-loader {
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 2rem;
+        }
+
+        @keyframes welcomeSlide {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Enhanced Header */
+        .header {
+            padding: 1rem 2rem;
+            background: rgba(51, 65, 85, 0.95);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid transparent;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 4rem 2rem;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, rgba(51, 65, 85, 0.6) 0%, rgba(71, 85, 105, 0.6) 100%);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            display: block;
+        }
+
+        .hero-stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .article {
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .article:hover {
+            transform: translateY(-5px);
+        }
+
+        .article-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .article-content {
+            line-height: 1.8;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .article-content h3 {
+            margin: 2.5rem 0 1.5rem 0;
+            color: var(--accent-primary);
+            font-size: 1.5rem;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .article-content h3::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .article-content strong {
+            color: var(--accent-secondary);
+            font-weight: 600;
+        }
+
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(45deg, var(--success-color), #059669);
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, var(--error-color), #dc2626);
+        }
+
+        .notification.warning {
+            background: linear-gradient(45deg, var(--warning-color), #d97706);
+        }
+
+        /* Modal System */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-container {
+            background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: min(90vw, 450px);
+            max-height: min(90vh, 700px);
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .form-button:hover::before {
+            left: 100%;
+        }
+
+        .form-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .article {
+                padding: 2rem;
+            }
+
+            .article-title {
+                font-size: 2rem;
+            }
+
+            .modal-container {
+                width: 95vw;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Banner -->
+    <div class="welcome-banner" id="welcomeBanner">
+        <div class="welcome-text">🛡️ WoCyber'a Hoş Geldiniz!</div>
+        <div class="welcome-subtitle">Gelişmiş Siber Güvenlik Platformu Yükleniyor...</div>
+        <div class="welcome-loader"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">🛡️ WoCyber</div>
+            <div class="nav-buttons" id="navButtons">
+                <button class="nav-btn" onclick="showModal('loginModal')">🔐 Giriş Yap</button>
+                <button class="nav-btn" onclick="showModal('registerModal')">📝 Kayıt Ol</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1 class="hero-title">Siber Güvenlik Dünyasına Hoş Geldiniz</h1>
+            <p class="hero-subtitle">Modern tehditler karşısında güvenliğinizi artırmak için gereken bilgi, araç ve kaynakları burada bulabilirsiniz.</p>
+            
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-number">500+</span>
+                    <span class="hero-stat-label">Güvenlik Makalesi</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">10k+</span>
+                    <span class="hero-stat-label">Aktif Kullanıcı</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">99.9%</span>
+                    <span class="hero-stat-label">Güvenlik Oranı</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">24/7</span>
+                    <span class="hero-stat-label">Destek</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Article -->
+        <article class="article">
+            <h1 class="article-title">Modern Web Güvenliği: XSS Saldırıları ve Korunma Yöntemleri</h1>
+            <div class="article-meta">
+                <span>👤 Güvenlik Uzmanı</span>
+                <span>📅 13 Ağustos 2025</span>
+                <span>⏱️ 8 dakika okuma</span>
+                <span>👀 1,245 görüntülenme</span>
+            </div>
+            <div class="article-content">
+                <p>Cross-Site Scripting (XSS) saldırıları, web uygulamalarında en yaygın görülen güvenlik açıklarından biridir. Bu yazıda XSS saldırılarının türlerini, nasıl gerçekleştirildiğini ve nasıl korunabileceğinizi detaylı olarak inceleyeceğiz.</p>
+                
+                <h3>🎯 XSS Nedir?</h3>
+                <p>XSS, saldırganların web uygulamalarına <strong>kötü amaçlı JavaScript kodları</strong> enjekte etmelerine olanak tanıyan bir güvenlik açığıdır. Bu saldırılar genellikle kullanıcı girişlerinin yeterince doğrulanmaması sonucu ortaya çıkar.</p>
+                
+                <h3>🔍 XSS Türleri</h3>
+                <p><strong>1. Stored XSS:</strong> Kötü amaçlı kod sunucu tarafında saklanır ve her sayfa yüklendiğinde çalışır.</p>
+                <p><strong>2. Reflected XSS:</strong> Kötü amaçlı kod URL parametreleri aracılığıyla gönderilir ve anında çalıştırılır.</p>
+                <p><strong>3. DOM-based XSS:</strong> Saldırı tamamen istemci tarafında gerçekleşir.</p>
+                
+                <h3>🛡️ Korunma Yöntemleri</h3>
+                <p>1. <strong>Input Validation:</strong> Tüm kullanıcı girişlerini doğrulayın</p>
+                <p>2. <strong>Output Encoding:</strong> HTML, JavaScript ve CSS çıktılarını kodlayın</p>
+                <p>3. <strong>Content Security Policy (CSP):</strong> Güvenlik politikaları uygulayın</p>
+                <p>4. <strong>HTTP-Only Cookies:</strong> Çerezleri JavaScript erişiminden koruyun</p>
+            </div>
+        </article>
+    </main>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>🔐 Giriş Yap</h2>
+                <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Kullanıcı Adı</label>
+                    <input type="text" id="loginUsername" class="form-input" placeholder="Kullanıcı adınızı girin" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Şifre</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Şifrenizi girin" required>
+                </div>
+                <button type="submit" class="form-button">🔓 Giriş Yap</button>
+            </form>
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted);">
+                Hesabınız yok mu? <a href="#" onclick="switchModals('loginModal', 'registerModal')" style="color: var(--accent-primary); text-decoration: none;">Kayıt olun</a>
+            </p>
+            <div style="margin-top: 1rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-primary);">
+                <strong>Demo Admin Hesabı:</strong><br>
+                Kullanıcı Adı: <code>admin</code><br>
+                Şifre: <code>admin123</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>📝 Kayıt Ol</h2>
+                <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
+            </div>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">Ad Soyad</label>
+                    <input type="text" id="registerName" class="form-input" placeholder="Adınız ve soyadınız" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kullanıcı Adı</label>
+                    <input type="text" id="registerUsername" class="form-input" placeholder="Kullanıcı adınız" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">E-posta</label>
+                    <input type="email" id="registerEmail" class="form-input" placeholder="E-posta adresiniz" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Şifre</label>
+                    <input type="password" id="registerPassword" class="form-input" placeholder="Güçlü bir şifre oluşturun" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Şifre Tekrar</label>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="Şifrenizi tekrar girin" required>
+                </div>
+                <button type="submit" class="form-button">✨ Kayıt Ol</button>
+            </form>
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted);">
+                Zaten hesabınız var mı? <a href="#" onclick="switchModals('registerModal', 'loginModal')" style="color: var(--accent-primary); text-decoration: none;">Giriş yapın</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        let currentUser = null;
+        let currentModal = null;
+
+        // Welcome Animation
+        setTimeout(() => {
+            document.getElementById('welcomeBanner').classList.add('hide');
+        }, 2000);
+
+        // Modal Management
+        function showModal(modalId) {
+            if (currentModal) closeModal(currentModal);
+            
+            currentModal = modalId;
+            const modal = document.getElementById(modalId);
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Focus management
+            setTimeout(() => {
+                const input = modal.querySelector('input');
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentModal = null;
+        }
+
+        function switchModals(from, to) {
+            closeModal(from);
+            setTimeout(() => showModal(to), 300);
+        }
+
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Login Handler
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            // Simple demo authentication
+            if (username === 'admin' && password === 'admin123') {
+                currentUser = {
+                    id: 'admin',
+                    username: 'admin',
+                    fullName: 'Site Yöneticisi',
+                    isAdmin: true
+                };
+                
+                localStorage.setItem('wocyber_current_user', JSON.stringify(currentUser));
+                
+                closeModal('loginModal');
+                updateUI();
+                showNotification('🎉 Başarıyla giriş yaptınız! Admin paneline hoş geldiniz.', 'success');
+            } else {
+                showNotification('❌ Kullanıcı adı veya şifre hatalı!', 'error');
+            }
+        }
+
+        // Register Handler
+        function handleRegister(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('registerName').value.trim();
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showNotification('❌ Şifreler eşleşmiyor!', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showNotification('❌ Şifre en az 6 karakter olmalı!', 'error');
+                return;
+            }
+
+            // Create user
+            const newUser = {
+                id: Date.now().toString(),
+                username,
+                fullName: name,
+                email,
+                password: btoa(password), // Simple encoding for demo
+                isAdmin: false,
+                registeredAt: Date.now()
+            };
+
+            // Save to localStorage
+            const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+            users.push(newUser);
+            localStorage.setItem('wocyber_users', JSON.stringify(users));
+
+            closeModal('registerModal');
+            showNotification('🎉 Kayıt başarılı! Şimdi giriş yapabilirsiniz.', 'success');
+            
+            setTimeout(() => showModal('loginModal'), 1000);
+        }
+
+        // Update UI based on login status
+        function updateUI() {
+            const navButtons = document.getElementById('navButtons');
+            
+            if (currentUser) {
+                navButtons.innerHTML = `
+                    <span style="color: var(--text-secondary); margin-right: 1rem;">Hoş geldin, ${currentUser.fullName}! 👋</span>
+                    ${currentUser.isAdmin ? '<button class="nav-btn" onclick="showAdminPanel()">👑 Admin Panel</button>' : ''}
+                    <button class="nav-btn" onclick="logout()">🚪 Çıkış</button>
+                `;
+            } else {
+                navButtons.innerHTML = `
+                    <button class="nav-btn" onclick="showModal('loginModal')">🔐 Giriş Yap</button>
+                    <button class="nav-btn" onclick="showModal('registerModal')">📝 Kayıt Ol</button>
+                `;
+            }
+        }
+
+        function showAdminPanel() {
+            showNotification('🛠️ Admin panel özelliği geliştiriliyor...', 'warning');
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('wocyber_current_user');
+            updateUI();
+            showNotification('👋 Başarıyla çıkış yaptınız!', 'success');
+        }
+
+        // Close modals on outside click
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeModal(currentModal);
+            }
+        });
+
+        // Escape key to close modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && currentModal) {
+                closeModal(currentModal);
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('wocyber_current_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+            }
+            updateUI();
+            
+            // Remove welcome banner if user reloads
+            setTimeout(() => {
+                document.getElementById('welcomeBanner').classList.add('hide');
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

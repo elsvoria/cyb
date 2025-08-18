@@ -1,0 +1,4280 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wo'Cyber - Gelişmiş Siber Güvenlik Platformu</title>
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- TOTP Library for 2FA -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otplib/12.0.1/otplib-browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    
+    <style>
+        :root {
+            /* Platinum Ağırlıklı Renk Paleti - Açık ve Lüks */
+            
+            /* Ana Renk %60 - Platinum Tonları */
+            --primary-color: #f5f5f5;  /* Açık platinum */
+            --secondary-platinum: #e8e8e8; /* Orta platinum */
+            --card-bg: rgba(245, 245, 245, 0.85);
+            --card-bg-solid: rgba(245, 245, 245, 0.95);
+            
+            /* İkincil Renk %30 - Açık Gri Tonları */
+            --secondary-color: #9ca3af; /* Açık gri */
+            --text-secondary: #6b7280;
+            --border-color: rgba(229, 231, 235, 0.4);
+            --border-color-strong: rgba(209, 213, 219, 0.6);
+            
+            /* Vurgu Rengi %10 - Soft Mor/Pembe */
+            --accent-color: #7c3aed;    /* Daha yumuşak mor */
+            --accent-primary: #7c3aed;
+            --accent-secondary: #be185d; /* Daha koyu pembe */
+            --accent-tertiary: #f3e8ff; /* Çok açık mor */
+            
+            /* Arka Plan - Platinum Base */
+            --primary-bg: #f8f9fa;
+            --overlay-bg: rgba(168, 85, 247, 0.05);
+            
+            /* Metin Renkleri - Yumuşak */
+            --text-primary: #374151;    /* Yumuşak koyu gri */
+            --text-muted: rgba(107, 114, 128, 0.7);
+            --text-accent: #a855f7;
+            
+            /* Durum Renkleri - Soft */
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            
+            /* Shadow ve Efektler - Yumuşak */
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-strong: rgba(0, 0, 0, 0.12);
+            --glow-effect: rgba(124, 58, 237, 0.15);
+            
+            /* Hover ve Etkileşim */
+            --hover-bg: rgba(124, 58, 237, 0.06);
+            --hover-bg-strong: rgba(124, 58, 237, 0.1);
+            --active-bg: rgba(124, 58, 237, 0.12);
+            
+            /* Glassmorphism efektleri */
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+        
+        /* Animated Background */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(45deg, #f8f9fa, #e8e8e8, #f5f5f5, #ffffff);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .shape {
+            position: absolute;
+            opacity: 0.15;
+            animation: float 8s infinite linear;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: rgba(139, 115, 85, 0.6);
+            font-weight: bold;
+            padding: 5px 8px;
+            background: rgba(248, 215, 218, 0.3);
+            border-radius: 6px;
+            border: 1px solid rgba(139, 115, 85, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        .coding-symbol {
+            animation: floatFast 6s infinite linear;
+        }
+        
+        @keyframes floatFast {
+            0% { transform: translateY(100vh) translateX(0) rotate(0deg); }
+            25% { transform: translateY(75vh) translateX(20px) rotate(90deg); }
+            50% { transform: translateY(50vh) translateX(-10px) rotate(180deg); }
+            75% { transform: translateY(25vh) translateX(30px) rotate(270deg); }
+            100% { transform: translateY(-10vh) translateX(-20px) rotate(360deg); }
+        }
+        
+        .shape:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+        .shape:nth-child(2) { top: 15%; left: 15%; animation-delay: -1s; }
+        .shape:nth-child(3) { top: 25%; left: 25%; animation-delay: -2s; }
+        .shape:nth-child(4) { top: 35%; left: 35%; animation-delay: -3s; }
+        .shape:nth-child(5) { top: 45%; left: 45%; animation-delay: -4s; }
+        .shape:nth-child(6) { top: 55%; left: 55%; animation-delay: -5s; }
+        .shape:nth-child(7) { top: 65%; left: 65%; animation-delay: -6s; }
+        .shape:nth-child(8) { top: 75%; left: 75%; animation-delay: -7s; }
+        .shape:nth-child(9) { top: 85%; left: 85%; animation-delay: -8s; }
+        .shape:nth-child(10) { top: 20%; left: 90%; animation-delay: -9s; }
+        .shape:nth-child(11) { top: 30%; left: 80%; animation-delay: -10s; }
+        .shape:nth-child(12) { top: 40%; left: 70%; animation-delay: -11s; }
+        .shape:nth-child(13) { top: 50%; left: 60%; animation-delay: -12s; }
+        .shape:nth-child(14) { top: 60%; left: 50%; animation-delay: -13s; }
+        .shape:nth-child(15) { top: 70%; left: 40%; animation-delay: -14s; }
+        .shape:nth-child(16) { top: 80%; left: 30%; animation-delay: -15s; }
+        .shape:nth-child(17) { top: 90%; left: 20%; animation-delay: -16s; }
+        .shape:nth-child(18) { top: 5%; left: 95%; animation-delay: -17s; }
+        .shape:nth-child(19) { top: 95%; left: 5%; animation-delay: -18s; }
+        .shape:nth-child(20) { top: 50%; left: 5%; animation-delay: -19s; }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+            100% { transform: translateY(0px) rotate(360deg); }
+        }
+        
+        /* Soft Pastel Hero Section with Coding Symbols */
+        .hero-section {
+            position: relative;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c2c7 50%, #f1aeb5 100%);
+            overflow: hidden;
+            padding: 0 2rem;
+        }
+        
+        /* Floating Coding Symbols Animation */
+        .hero-section::before {
+            content: '{ } < > / * + - = ; ( ) [ ] " \' # $ % & @ | \\ ~ ` ^ _ 0 1 < / > < html > < css > < js > function() if else for while class div span img src href onclick style color font';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            right: -50%;
+            bottom: -50%;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: rgba(147, 112, 219, 0.15);
+            white-space: pre-wrap;
+            word-spacing: 20px;
+            line-height: 30px;
+            animation: floatSymbols 15s linear infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .hero-section::after {
+            content: 'function var let const if else for while do switch case break continue return class extends import export default async await try catch finally new delete typeof instanceof Array Object String Number Boolean Date Math JSON console log error warn info';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            right: -50%;
+            bottom: -50%;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: rgba(219, 112, 147, 0.12);
+            white-space: pre-wrap;
+            word-spacing: 25px;
+            line-height: 35px;
+            animation: floatSymbols 20s linear infinite reverse;
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        @keyframes floatSymbols {
+            0% { transform: translate(-20%, -20%) rotate(0deg); }
+            25% { transform: translate(20%, -10%) rotate(90deg); }
+            50% { transform: translate(10%, 20%) rotate(180deg); }
+            75% { transform: translate(-10%, 10%) rotate(270deg); }
+            100% { transform: translate(-20%, -20%) rotate(360deg); }
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+        
+        .hero-title {
+            font-size: 5.5rem;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+            color: #000000 !important;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            letter-spacing: 0.15em;
+            position: relative;
+            z-index: 10;
+            text-transform: uppercase;
+            font-style: normal;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: rgba(139, 115, 85, 0.8);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            position: relative;
+            z-index: 10;
+            text-shadow: 0 0 15px rgba(139, 115, 85, 0.2);
+            animation: subtitleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes subtitleGlow {
+            0% { text-shadow: 0 0 15px rgba(139, 115, 85, 0.2); }
+            100% { text-shadow: 0 0 25px rgba(139, 115, 85, 0.4); }
+        }
+
+        /* Date Time Hexagon */
+        .date-time-hexagon {
+            position: relative;
+            width: 200px;
+            height: 115px;
+            background: rgba(248, 215, 218, 0.9);
+            border: 2px solid #000000;
+            margin: 0 auto 2rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            font-size: 14px;
+            color: #000000;
+            z-index: 15;
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+            backdrop-filter: blur(10px);
+            animation: hexagonPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes hexagonPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Enhanced Modal System */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(76, 50, 122, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-container {
+            background: var(--card-bg-solid);
+            border-radius: 16px;
+            padding: 2rem;
+            width: min(90vw, 450px);
+            max-height: min(90vh, 700px);
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--border-color-strong);
+            box-shadow: 0 20px 60px var(--shadow-strong);
+            backdrop-filter: blur(15px);
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-container.flipping {
+            animation: modalFlip 0.6s ease-in-out;
+        }
+
+        @keyframes modalFlip {
+            0% { transform: rotateY(0); }
+            50% { transform: rotateY(90deg) scale(0.8); opacity: 0.5; }
+            100% { transform: rotateY(0) scale(1); opacity: 1; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .modal-overlay, .modal-container, .modal-container.flipping {
+                transition: none;
+                animation: none;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(204, 203, 200, 0.05);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(242, 162, 191, 0.2);
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), #d1869b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #d1869b, var(--accent-primary));
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(242, 162, 191, 0.3);
+        }
+
+        .form-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-help {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            max-width: 400px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success-color);
+        }
+
+        .notification.error {
+            background: var(--error-color);
+        }
+
+        .notification.warning {
+            background: var(--warning-color);
+        }
+
+        /* Comment System */
+        .comment-form {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .comment-action {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: rgba(242, 162, 191, 0.05);
+            color: var(--text-muted);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .comment-action:hover {
+            background: var(--hover-bg-strong);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        .comment-action.active {
+            background: linear-gradient(135deg, var(--accent-primary), #d1869b);
+            color: white;
+            border-color: var(--accent-primary);
+            box-shadow: 0 3px 10px rgba(242, 162, 191, 0.3);
+        }
+
+        .comment {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .comment-meta {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .comment-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .comment-content {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .comment-replies {
+            margin-left: 3rem;
+            margin-top: 1rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--border-color);
+        }
+
+        /* Admin Panel Styles */
+        .admin-panel {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 2px solid var(--accent-primary);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3);
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .admin-title {
+            color: var(--accent-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-badge {
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            background: var(--glass-bg);
+            padding: 0.5rem;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .admin-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid transparent;
+        }
+
+        .admin-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .admin-tab.active {
+            color: white;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 15px var(--glow-effect);
+        }
+
+        .admin-tab:hover:not(.active) {
+            color: var(--text-primary);
+            background: var(--hover-bg);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .admin-tab:hover:not(.active)::before {
+            left: 0;
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .admin-content.active {
+            display: block;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .admin-stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .admin-table {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .admin-table table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .admin-table th {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .admin-table tr:hover {
+            background: var(--hover-bg);
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-action-btn {
+            padding: 0.25rem 0.75rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-action-btn.edit {
+            background: linear-gradient(135deg, var(--warning-color), #f59e0b);
+            color: white;
+        }
+
+        .admin-action-btn.delete {
+            background: linear-gradient(135deg, var(--error-color), #dc2626);
+            color: white;
+        }
+
+        .admin-action-btn.ban {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .admin-action-btn.promote {
+            background: var(--accent-secondary);
+            color: white;
+        }
+
+        .admin-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .user-status.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+        }
+
+        .user-status.banned {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error-color);
+        }
+
+        .user-status.admin {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-primary);
+        }
+
+        .edit-form {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 1rem;
+        }
+
+        .edit-form input {
+            width: 100%;
+            padding: 0.5rem;
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .edit-form button {
+            margin-right: 0.5rem;
+        }
+
+        /* Related Articles */
+        .related-articles {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .related-articles h2 {
+            color: var(--accent-primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Blog Specific Styles */
+        .blog-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--glass-bg);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .featured-section {
+            margin-bottom: 3rem;
+        }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .featured-article {
+            background: var(--glass-bg);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .featured-article:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(184, 134, 11, 0.3);
+            border-color: var(--accent-primary);
+        }
+
+        .article-image {
+            height: 150px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+
+        .article-category {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .featured-article .article-content {
+            padding: 1.5rem;
+        }
+
+        .featured-article h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .featured-article p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .article-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* All Articles Grid */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .article-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .article-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(184, 134, 11, 0.3);
+            border-color: var(--accent-primary);
+        }
+
+        .article-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .article-card h3 {
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .article-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .article-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .article-link:hover {
+            color: var(--accent-secondary);
+            transform: translateX(4px);
+        }
+
+        .article-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .article-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .article-link:hover {
+            color: var(--accent-secondary);
+        }
+
+        .article-comments {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border-color);
+        }
+
+        /* Header */
+        .header {
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color-strong);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 8px 32px var(--shadow);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 2rem;
+        }
+        
+        /* Header Navigation Menu */
+        .header-nav-menu {
+            display: flex;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+            background: var(--glass-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .header-nav-link:hover {
+            background: var(--hover-bg);
+            color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+        
+        .header-nav-link.active {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 4px 15px var(--glow-effect);
+        }
+        
+        .nav-icon {
+            font-size: 1rem;
+        }
+        
+        /* User Settings Modal */
+        .user-settings-content {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .settings-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+        
+        .theme-option {
+            text-align: center;
+            cursor: pointer;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+        }
+        
+        .theme-option:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow);
+        }
+        
+        .theme-option.active {
+            border-color: var(--accent-primary);
+            background: var(--hover-bg);
+        }
+        
+        .theme-preview {
+            width: 60px;
+            height: 40px;
+            border-radius: 8px;
+            margin: 0 auto 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .theme-colors {
+            display: flex;
+            height: 100%;
+        }
+        
+        .theme-colors span {
+            flex: 1;
+        }
+        
+        .light-theme {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #e9ecef 100%);
+        }
+        
+        .dark-theme {
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 50%, #0d0d0d 100%);
+        }
+        
+        .blue-theme {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #1e1b4b 100%);
+        }
+        
+        .green-theme {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #042f2e 100%);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            text-shadow: 0 0 20px var(--glow-effect);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .logo-main {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-sub {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(184, 134, 11, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .logo:hover::before {
+            left: 100%;
+        }
+
+        /* Main Layout - With Hero Integration */
+        .main-layout {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(5px);
+            border-radius: 20px 20px 0 0;
+            margin-top: -20px;
+        }
+        
+        .main-content-full {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-left {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .sidebar-logo {
+            text-align: center;
+            padding: 1rem;
+            background: var(--glass-bg);
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .sidebar-logo-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .category-menu {
+            margin-top: 1rem;
+        }
+
+        .category-list-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .category-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .category-link:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+            transform: translateX(4px);
+        }
+
+        /* Main Content Enhanced */
+        .main-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            min-height: 400px;
+        }
+
+        /* Footer Section */
+        .footer-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .footer-section {
+            grid-column: 1 / -1;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--accent-primary);
+            background: var(--glass-bg);
+            color: var(--accent-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-btn:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--glow-effect);
+        }
+
+        .nav-btn:hover::before {
+            left: 0;
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--glow-effect);
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .article {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(76, 50, 122, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .article-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--accent-primary), #d1869b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .article-content {
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .article-content h3 {
+            margin: 2rem 0 1rem 0;
+            color: var(--text-primary);
+        }
+
+        .article-content p {
+            margin-bottom: 1rem;
+        }
+
+        .article-content code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        /* 2FA Setup */
+        .twofa-setup {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .qr-code {
+            margin: 2rem 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .backup-codes {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr 2fr 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+            
+            .sidebar-right-2 {
+                grid-column: 3;
+                grid-row: 1;
+            }
+
+            .featured-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, auto);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .header-nav-menu {
+                order: 2;
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding: 0.5rem;
+            }
+            
+            .header-nav-link {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+                white-space: nowrap;
+            }
+            
+            .nav-buttons {
+                order: 3;
+            }
+
+            .hero-section {
+                height: 60vh;
+            }
+            
+            .hero-title {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .featured-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, auto);
+            }
+            
+            .main-layout {
+                padding: 1rem;
+            }
+            
+            .modal-container {
+                width: 95vw;
+                padding: 1.5rem;
+            }
+            
+            .comment-replies {
+                margin-left: 1rem;
+            }
+
+            .admin-tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .theme-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+            .admin-tab {
+                text-align: center;
+            }
+
+            .admin-table {
+                font-size: 0.875rem;
+            }
+
+            .admin-actions {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .articles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .logo {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+
+            .logo-text {
+                align-items: center;
+            }
+        }
+
+        @keyframes fadeInUp {
+            0% { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(20px) rotate(240deg); }
+            100% { transform: translateY(0px) rotate(360deg); }
+        }
+        
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes typewriter {
+            0%, 90% { width: 0; }
+            45%, 55% { width: 100%; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px var(--glow-effect);
+            }
+            50% { 
+                box-shadow: 0 0 30px var(--glow-effect), 
+                           0 0 40px rgba(124, 58, 237, 0.6);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Analytics Panel Styles */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .analytics-card {
+            background: var(--glass-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .analytics-card h4 {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .analytics-stat {
+            margin-bottom: 0.75rem;
+        }
+
+        .analytics-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            text-shadow: 0 0 10px var(--glow-effect);
+        }
+
+        .analytics-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .geo-stat span {
+            display: block;
+            margin: 0.5rem 0;
+            color: var(--text-secondary);
+        }
+
+        .device-stat {
+            margin-bottom: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Content Management Styles */
+        .content-management {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .content-section {
+            background: var(--glass-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .content-section h4 {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 0.25rem;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+
+        .action-btn.edit {
+            background: linear-gradient(135deg, var(--warning-color), #ffd93d);
+            color: black;
+        }
+
+        .action-btn.delete {
+            background: linear-gradient(135deg, var(--error-color), #ff8a8a);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.75rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .content-item h5 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .content-meta {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .content-actions {
+            margin-top: 0.75rem;
+        }
+
+        .category-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 0.25rem;
+        }
+
+        /* System Management Styles */
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .system-card {
+            background: var(--glass-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .system-card h4 {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .system-stat {
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            display: block;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-bar {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .stat-value {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .tool-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tool-btn:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .log-viewer {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            align-items: center;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            min-width: 140px;
+        }
+
+        .log-level {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .log-level.info {
+            background: var(--info-color);
+            color: black;
+        }
+
+        .log-level.warning {
+            background: var(--warning-color);
+            color: black;
+        }
+
+        .log-level.success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .log-message {
+            color: var(--text-secondary);
+            flex: 1;
+        }
+
+        @keyframes welcomeFade {
+            0% { 
+                opacity: 0; 
+                transform: scale(0.8) translateY(20px);
+            }
+            20% { 
+                opacity: 1; 
+                transform: scale(1) translateY(0);
+            }
+            80% { 
+                opacity: 1; 
+                transform: scale(1) translateY(0);
+            }
+            100% { 
+                opacity: 0; 
+                transform: scale(0.8) translateY(-20px);
+            }
+        }
+
+        /* Welcome Screen */
+        .welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(76, 50, 122, 0.95), rgba(76, 50, 122, 0.8));
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: welcomeFade 3s ease-in-out forwards;
+            pointer-events: none;
+        }
+
+        .welcome-content {
+            text-align: center;
+            color: white;
+            animation: welcomeFade 3s ease-in-out forwards;
+        }
+
+        .welcome-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), #d1869b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(242, 162, 191, 0.5);
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: var(--neutral-color);
+            opacity: 0.9;
+        }
+
+        .loading {
+            animation: pulse 2s infinite;
+        }
+
+        .glow-effect {
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .slide-in {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        /* Logo enhancement */
+        .logo:hover {
+            animation: glow 2s ease-in-out infinite;
+            transform: scale(1.05);
+        }
+
+        /* Article cards enhanced animation */
+        .article-card {
+            opacity: 0;
+            animation: slideInUp 0.6s ease-out forwards;
+        }
+
+        .article-card:nth-child(2) { animation-delay: 0.1s; }
+        .article-card:nth-child(3) { animation-delay: 0.2s; }
+        .article-card:nth-child(4) { animation-delay: 0.3s; }
+
+        /* Improved scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(76, 50, 122, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--accent-primary), #d1869b);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #d1869b, var(--accent-primary));
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-background"></div>
+    <div class="floating-shapes">
+        <div class="shape coding-symbol">{ }</div>
+        <div class="shape coding-symbol">< ></div>
+        <div class="shape coding-symbol">function()</div>
+        <div class="shape coding-symbol">if else</div>
+        <div class="shape coding-symbol">for</div>
+        <div class="shape coding-symbol">while</div>
+        <div class="shape coding-symbol">class</div>
+        <div class="shape coding-symbol">div</div>
+        <div class="shape coding-symbol">css</div>
+        <div class="shape coding-symbol">html</div>
+        <div class="shape coding-symbol">js</div>
+        <div class="shape coding-symbol">var</div>
+        <div class="shape coding-symbol">let</div>
+        <div class="shape coding-symbol">const</div>
+        <div class="shape coding-symbol">==</div>
+        <div class="shape coding-symbol">!=</div>
+        <div class="shape coding-symbol">&&</div>
+        <div class="shape coding-symbol">||</div>
+        <div class="shape coding-symbol">++</div>
+        <div class="shape coding-symbol">--</div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <!-- Date Time Hexagon -->
+        <div class="date-time-hexagon">
+            <span id="currentDateTime">13 Ağustos 2025</span>
+        </div>
+        <h1 class="hero-title" style="font-family: 'Orbitron', monospace; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #000000 !important; -webkit-text-fill-color: #000000 !important; background: none !important;">WO'CYBER SECURITY</h1>
+        <p class="hero-subtitle">Siber güvenlik dünyasından en güncel haberler, araçlar ve eğitimler</p>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-overlay" id="welcomeScreen">
+        <div class="welcome-content">
+            <h1 class="welcome-title" style="font-family: 'Orbitron', monospace; font-weight: 700; letter-spacing: 0.15em; font-size: 4rem; color: #ffffff; text-transform: uppercase;">WO'CYBER SECURITY</h1>
+            <p class="welcome-subtitle" style="font-family: 'Rajdhani', sans-serif; font-weight: 400; font-size: 1.5rem; color: rgba(255, 255, 255, 0.9); letter-spacing: 0.05em; margin-top: 1rem;">Siber Güvenlik Dünyasının Öncü Platformu</p>
+        </div>
+    </div>
+
+        <!-- Header with Navigation Bar -->
+        <header class="header">
+            <nav class="nav">
+                <div class="logo">
+                    <div class="logo-icon">🛡️</div>
+                    <div class="logo-text">
+                        <span class="logo-main" style="font-family: 'Orbitron', monospace; font-weight: 700; letter-spacing: 0.1em;">Wo'Cyber</span>
+                        <span class="logo-sub">Security Blog</span>
+                    </div>
+                </div>            <!-- Kategori Navigasyonu - Header'da -->
+            <div class="header-nav-menu">
+                <a href="#" class="header-nav-link active" onclick="filterByCategory('all')">
+                    <span class="nav-icon">📋</span> Tüm Yazılar
+                </a>
+                <a href="#" class="header-nav-link" onclick="filterByCategory('bug-bounty')">
+                    <span class="nav-icon">🐛</span> Bug Bounty
+                </a>
+                <a href="#" class="header-nav-link" onclick="filterByCategory('penetration-testing')">
+                    <span class="nav-icon">🔧</span> Pen Test
+                </a>
+                <a href="#" class="header-nav-link" onclick="filterByCategory('malware-analysis')">
+                    <span class="nav-icon">🔍</span> Malware
+                </a>
+                <a href="#" class="header-nav-link" onclick="filterByCategory('web-security')">
+                    <span class="nav-icon">🛡️</span> Web Sec
+                </a>
+                <a href="#" class="header-nav-link" onclick="filterByCategory('forensics')">
+                    <span class="nav-icon">🕵️</span> Forensics
+                </a>
+                <a href="#" class="header-nav-link" onclick="filterByCategory('security-tools')">
+                    <span class="nav-icon">🔨</span> Tools
+                </a>
+            </div>
+            
+            <div class="nav-buttons" id="navButtons">
+                <button class="nav-btn" onclick="showModal('loginModal')">🔐 Giriş Yap</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Layout -->
+    <div class="main-layout">
+        <!-- Ana İçerik -->
+        <div class="main-content-full">
+            <div class="blog-header">
+                <h1 style="font-family: 'Orbitron', monospace; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #2c2c2c; margin-bottom: 0.5rem; font-size: 3.5rem; text-align: center;">
+                    Wo'Cyber Security
+                </h1>
+                <p style="font-family: 'Rajdhani', sans-serif; font-weight: 400; color: #666; margin-bottom: 2rem; font-size: 1.3rem; text-align: center; letter-spacing: 0.05em;">
+                    Siber güvenlik dünyasında yolculuğunuz burada başlıyor...
+                </p>
+            </div>
+
+            <!-- Öne Çıkan Yazılar -->
+            <div class="featured-section">
+                <h2 style="color: var(--accent-primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    ⭐ Öne Çıkan Yazılar
+                </h2>
+                
+                <div class="featured-grid">
+                    <article class="featured-article" data-category="web-security">
+                        <div class="article-image">
+                            <div class="article-category">🛡️ Web Security</div>
+                        </div>
+                        <div class="article-content">
+                            <h3>Modern XSS Saldırıları ve Korunma Yöntemleri</h3>
+                            <p>Cross-Site Scripting saldırılarının yeni teknikleri ve etkili savunma stratejileri...</p>
+                            <div class="article-meta">
+                                <span>📅 13 Ağustos 2025</span>
+                                <span>👤 Admin</span>
+                                <span>⏱️ 8 dk okuma</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="featured-article" data-category="bug-bounty">
+                        <div class="article-image">
+                            <div class="article-category">� Bug Bounty</div>
+                        </div>
+                        <div class="article-content">
+                            <h3>Bug Bounty Başlangıç Rehberi 2025</h3>
+                            <p>Sıfırdan bug bounty avcısı olmak için bilmeniz gereken tüm teknikiaksi ve araçlar...</p>
+                            <div class="article-meta">
+                                <span>📅 12 Ağustos 2025</span>
+                                <span>👤 Security Expert</span>
+                                <span>⏱️ 12 dk okuma</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="featured-article" data-category="penetration-testing">
+                        <div class="article-image">
+                            <div class="article-category">🔧 Pen Testing</div>
+                        </div>
+                        <div class="article-content">
+                            <h3>Metasploit ile Gelişmiş Saldırı Teknikleri</h3>
+                            <p>Metasploit framework kullanarak etkili penetration testing nasıl yapılır...</p>
+                            <div class="article-meta">
+                                <span>📅 11 Ağustos 2025</span>
+                                <span>👤 Penetration Tester</span>
+                                <span>⏱️ 15 dk okuma</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="featured-article" data-category="malware-analysis">
+                        <div class="article-image">
+                            <div class="article-category">🔍 Malware</div>
+                        </div>
+                        <div class="article-content">
+                            <h3>Ransomware Analizi: WannaCry Örneği</h3>
+                            <p>WannaCry ransomware'inin detaylı analizi ve zararlı yazılım analiz teknikleri...</p>
+                            <div class="article-meta">
+                                <span>📅 10 Ağustos 2025</span>
+                                <span>👤 Malware Analyst</span>
+                                <span>⏱️ 20 dk okuma</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Bilgi -->
+        <div class="footer-section">
+            <h3 style="font-family: 'Orbitron', monospace; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #2c2c2c; margin-bottom: 1rem; text-align: center; font-size: 1.8rem;">Wo'Cyber Security Blog Hakkında</h3>
+            <p style="font-family: 'Rajdhani', sans-serif; font-weight: 400; color: #666; text-align: center; max-width: 600px; margin: 0 auto; font-size: 1.1rem; line-height: 1.6;">
+                Wo'Cyber, siber güvenlik alanında güncel bilgiler, araçlar ve kaynaklar sunan bir platformdur. 
+                Bug bounty, penetration testing, malware analizi ve daha birçok konuda içerikler bulabilirsiniz.
+            </p>
+        </div>
+    </div>
+                <button class="nav-btn" onclick="showModal('registerModal')">📝 Kayıt Ol</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-panel">
+        <div class="admin-header">
+            <div class="admin-title">
+                🛠️ Admin Paneli
+                <span class="admin-badge">Yönetici</span>
+            </div>
+            <button class="nav-btn" onclick="toggleAdminPanel()">❌ Kapat</button>
+        </div>
+
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="showAdminTab('dashboard')">📊 Dashboard</button>
+            <button class="admin-tab" onclick="showAdminTab('users')">👥 Kullanıcılar</button>
+            <button class="admin-tab" onclick="showAdminTab('comments')">💬 Yorumlar</button>
+            <button class="admin-tab" onclick="showAdminTab('security')">🔒 Güvenlik</button>
+            <button class="admin-tab" onclick="showAdminTab('analytics')">📈 Analytics</button>
+            <button class="admin-tab" onclick="showAdminTab('content')">📝 İçerik</button>
+            <button class="admin-tab" onclick="showAdminTab('system')">🖥️ Sistem</button>
+            <button class="admin-tab" onclick="showAdminTab('settings')">⚙️ Ayarlar</button>
+        </div>
+
+        <div id="adminDashboard" class="admin-content active">
+            <div class="admin-stats">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number" id="totalUsers">0</div>
+                    <div class="admin-stat-label">Toplam Kullanıcı</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number" id="totalComments">0</div>
+                    <div class="admin-stat-label">Toplam Yorum</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number" id="activeUsers">0</div>
+                    <div class="admin-stat-label">Aktif Kullanıcı</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number" id="bannedUsers">0</div>
+                    <div class="admin-stat-label">Yasaklı Kullanıcı</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="adminUsers" class="admin-content">
+            <div class="admin-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kullanıcı ID</th>
+                            <th>Kullanıcı Adı</th>
+                            <th>Email</th>
+                            <th>Durum</th>
+                            <th>Kayıt Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="adminComments" class="admin-content">
+            <div class="admin-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Yorum ID</th>
+                            <th>Kullanıcı</th>
+                            <th>İçerik</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="commentsTableBody">
+                        <!-- Comments will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="adminSecurity" class="admin-content">
+            <h3>🔒 Güvenlik Logs</h3>
+            <div class="admin-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Kullanıcı</th>
+                            <th>İşlem</th>
+                            <th>IP Adresi</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="securityLogsBody">
+                        <!-- Security logs will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="adminSettings" class="admin-content">
+            <h3>⚙️ Site Ayarları</h3>
+            <div class="edit-form">
+                <label>Site Başlığı:</label>
+                <input type="text" id="siteTitle" value="Wo'Cyber - Siber Güvenlik Platformu">
+                
+                <label>Site Açıklaması:</label>
+                <input type="text" id="siteDescription" value="Siber güvenlik eğitimleri ve kaynakları">
+                
+                <label>Yorumları Etkinleştir:</label>
+                <select id="commentsEnabled">
+                    <option value="true">Evet</option>
+                    <option value="false">Hayır</option>
+                </select>
+                
+                <label>Kayıt Olmayı Etkinleştir:</label>
+                <select id="registrationEnabled">
+                    <option value="true">Evet</option>
+                    <option value="false">Hayır</option>
+                </select>
+                
+                <button class="form-button" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+            </div>
+        </div>
+
+        <!-- Analytics Panel -->
+        <div id="adminAnalytics" class="admin-content">
+            <h3>📈 Analytics & İstatistikler</h3>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h4>📊 Ziyaretçi İstatistikleri</h4>
+                    <div class="analytics-stat">
+                        <span class="analytics-number">1,247</span>
+                        <span class="analytics-label">Günlük Ziyaretçi</span>
+                    </div>
+                    <div class="analytics-stat">
+                        <span class="analytics-number">34,892</span>
+                        <span class="analytics-label">Aylık Ziyaretçi</span>
+                    </div>
+                </div>
+                
+                <div class="analytics-card">
+                    <h4>🌍 Coğrafi Dağılım</h4>
+                    <div class="geo-stat">
+                        <span>🇹🇷 Türkiye: 65%</span>
+                        <span>🇺🇸 ABD: 15%</span>
+                        <span>🇩🇪 Almanya: 10%</span>
+                        <span>🌍 Diğer: 10%</span>
+                    </div>
+                </div>
+
+                <div class="analytics-card">
+                    <h4>📱 Cihaz Dağılımı</h4>
+                    <div class="device-stats">
+                        <div class="device-stat">
+                            <span>💻 Desktop: 45%</span>
+                            <div class="progress-bar"><div class="progress" style="width: 45%"></div></div>
+                        </div>
+                        <div class="device-stat">
+                            <span>📱 Mobile: 40%</span>
+                            <div class="progress-bar"><div class="progress" style="width: 40%"></div></div>
+                        </div>
+                        <div class="device-stat">
+                            <span>📱 Tablet: 15%</span>
+                            <div class="progress-bar"><div class="progress" style="width: 15%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Management Panel -->
+        <div id="adminContent" class="admin-content">
+            <h3>📝 İçerik Yönetimi</h3>
+            <div class="content-management">
+                <div class="content-section">
+                    <h4>📰 Makaleler</h4>
+                    <button class="action-btn primary" onclick="showModal('addArticleModal')">
+                        ➕ Yeni Makale Ekle
+                    </button>
+                    <div class="content-list">
+                        <div class="content-item">
+                            <h5>Modern Web Güvenliği: XSS Saldırıları</h5>
+                            <span class="content-meta">📅 13 Ağustos 2025 | 👤 Admin</span>
+                            <div class="content-actions">
+                                <button class="action-btn edit">✏️ Düzenle</button>
+                                <button class="action-btn delete">🗑️ Sil</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4>🏷️ Kategoriler</h4>
+                    <button class="action-btn primary" onclick="addCategory()">
+                        ➕ Kategori Ekle
+                    </button>
+                    <div class="category-list">
+                        <span class="category-tag">Bug Bounty</span>
+                        <span class="category-tag">Penetration Testing</span>
+                        <span class="category-tag">Malware Analysis</span>
+                        <span class="category-tag">Web Security</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Management Panel -->
+        <div id="adminSystem" class="admin-content">
+            <h3>🖥️ Sistem Yönetimi</h3>
+            <div class="system-grid">
+                <div class="system-card">
+                    <h4>⚡ Performans</h4>
+                    <div class="system-stats">
+                        <div class="system-stat">
+                            <span class="stat-label">CPU Kullanımı:</span>
+                            <div class="stat-bar">
+                                <div class="stat-fill" style="width: 35%"></div>
+                                <span class="stat-value">35%</span>
+                            </div>
+                        </div>
+                        <div class="system-stat">
+                            <span class="stat-label">RAM Kullanımı:</span>
+                            <div class="stat-bar">
+                                <div class="stat-fill" style="width: 60%"></div>
+                                <span class="stat-value">60%</span>
+                            </div>
+                        </div>
+                        <div class="system-stat">
+                            <span class="stat-label">Disk Kullanımı:</span>
+                            <div class="stat-bar">
+                                <div class="stat-fill" style="width: 45%"></div>
+                                <span class="stat-value">45%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="system-card">
+                    <h4>🔧 Sistem Araçları</h4>
+                    <div class="system-tools">
+                        <button class="tool-btn" onclick="clearCache()">
+                            🗑️ Cache Temizle
+                        </button>
+                        <button class="tool-btn" onclick="optimizeDatabase()">
+                            🔧 Veritabanı Optimizasyonu
+                        </button>
+                        <button class="tool-btn" onclick="generateBackup()">
+                            💾 Yedek Oluştur
+                        </button>
+                        <button class="tool-btn" onclick="checkUpdates()">
+                            🔄 Güncellemeleri Kontrol Et
+                        </button>
+                    </div>
+                </div>
+
+                <div class="system-card">
+                    <h4>📊 Sistem Logları</h4>
+                    <div class="log-viewer">
+                        <div class="log-entry">
+                            <span class="log-time">2025-08-13 14:30:25</span>
+                            <span class="log-level info">INFO</span>
+                            <span class="log-message">Kullanıcı başarıyla giriş yaptı</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">2025-08-13 14:25:12</span>
+                            <span class="log-level warning">WARN</span>
+                            <span class="log-message">Başarısız giriş denemesi</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">2025-08-13 14:20:08</span>
+                            <span class="log-level success">SUCCESS</span>
+                            <span class="log-message">Sistem güncellemesi tamamlandı</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </main>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>🔐 Giriş Yap</h2>
+                <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Kullanıcı Adı</label>
+                    <input type="text" id="loginUsername" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Şifre</label>
+                    <input type="password" id="loginPassword" class="form-input" required>
+                </div>
+                <button type="submit" class="form-button">🔓 Giriş Yap</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem;">
+                Hesabınız yok mu? <a href="#" onclick="switchModals('loginModal', 'registerModal')" style="color: var(--accent-primary);">Kayıt olun</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>📝 Kayıt Ol</h2>
+                <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
+            </div>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">Ad Soyad</label>
+                    <input type="text" id="registerName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kullanıcı Adı</label>
+                    <input type="text" id="registerUsername" class="form-input" pattern="[a-zA-Z0-9._-]+" required>
+                    <div class="form-help">Sadece harf, rakam, nokta, alt çizgi ve tire</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">E-posta</label>
+                    <input type="email" id="registerEmail" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Şifre</label>
+                    <input type="password" id="registerPassword" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Şifre Tekrar</label>
+                    <input type="password" id="confirmPassword" class="form-input" required>
+                </div>
+                <button type="submit" class="form-button">✨ Kayıt Ol</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem;">
+                Zaten hesabınız var mı? <a href="#" onclick="switchModals('registerModal', 'loginModal')" style="color: var(--accent-primary);">Giriş yapın</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- User Settings Modal -->
+    <div class="modal-overlay" id="userSettingsModal">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>⚙️ Kullanıcı Ayarları</h2>
+                <button class="modal-close" onclick="closeModal('userSettingsModal')">&times;</button>
+            </div>
+            <div class="user-settings-content">
+                <!-- Tema Ayarları -->
+                <div class="settings-section">
+                    <h3 style="color: var(--accent-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🎨 Tema Ayarları
+                    </h3>
+                    <div class="theme-selector">
+                        <div class="theme-option" onclick="changeTheme('light')" data-theme="light">
+                            <div class="theme-preview light-theme">
+                                <div class="theme-colors">
+                                    <span style="background: #f8f9fa;"></span>
+                                    <span style="background: #6c757d;"></span>
+                                    <span style="background: #0066cc;"></span>
+                                </div>
+                            </div>
+                            <span>Açık Tema</span>
+                        </div>
+                        
+                        <div class="theme-option" onclick="changeTheme('dark')" data-theme="dark">
+                            <div class="theme-preview dark-theme">
+                                <div class="theme-colors">
+                                    <span style="background: #1a1a1a;"></span>
+                                    <span style="background: #e5e4e2;"></span>
+                                    <span style="background: #b8860b;"></span>
+                                </div>
+                            </div>
+                            <span>Koyu Tema</span>
+                        </div>
+                        
+                        <div class="theme-option" onclick="changeTheme('blue')" data-theme="blue">
+                            <div class="theme-preview blue-theme">
+                                <div class="theme-colors">
+                                    <span style="background: #1e3a8a;"></span>
+                                    <span style="background: #60a5fa;"></span>
+                                    <span style="background: #fbbf24;"></span>
+                                </div>
+                            </div>
+                            <span>Mavi Tema</span>
+                        </div>
+                        
+                        <div class="theme-option" onclick="changeTheme('green')" data-theme="green">
+                            <div class="theme-preview green-theme">
+                                <div class="theme-colors">
+                                    <span style="background: #064e3b;"></span>
+                                    <span style="background: #34d399;"></span>
+                                    <span style="background: #f59e0b;"></span>
+                                </div>
+                            </div>
+                            <span>Yeşil Tema</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Profil Ayarları -->
+                <div class="settings-section">
+                    <h3 style="color: var(--accent-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        👤 Profil Ayarları
+                    </h3>
+                    <div class="form-group">
+                        <label class="form-label">Görünen Ad</label>
+                        <input type="text" id="userDisplayName" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">E-posta</label>
+                        <input type="email" id="userEmail" class="form-input">
+                    </div>
+                    <button class="form-button" onclick="saveUserSettings()">💾 Ayarları Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        let currentUser = null;
+        let isSubmitting = false;
+        let currentModal = null;
+
+        // Admin Panel Manager
+        class AdminPanelManager {
+            constructor() {
+                this.currentTab = 'dashboard';
+            }
+
+            showPanel() {
+                const panel = document.getElementById('adminPanel');
+                panel.classList.add('active');
+                this.updateStats();
+                this.loadUsers();
+                this.loadComments();
+                this.loadSecurityLogs();
+            }
+
+            hidePanel() {
+                const panel = document.getElementById('adminPanel');
+                panel.classList.remove('active');
+            }
+
+            showTab(tabName) {
+                // Hide all tabs
+                document.querySelectorAll('.admin-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.querySelectorAll('.admin-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+
+                // Show selected tab
+                document.getElementById(`admin${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`).classList.add('active');
+                document.querySelector(`[onclick="showAdminTab('${tabName}')"]`).classList.add('active');
+                
+                this.currentTab = tabName;
+
+                // Load data for specific tabs
+                if (tabName === 'users') this.loadUsers();
+                if (tabName === 'comments') this.loadComments();
+                if (tabName === 'security') this.loadSecurityLogs();
+                if (tabName === 'analytics') this.loadAnalytics();
+                if (tabName === 'content') this.loadContent();
+                if (tabName === 'system') this.loadSystemInfo();
+            }
+
+            updateStats() {
+                const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+                const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+                
+                document.getElementById('totalUsers').textContent = users.length;
+                document.getElementById('totalComments').textContent = comments.length;
+                document.getElementById('activeUsers').textContent = users.filter(u => !u.banned).length;
+                document.getElementById('bannedUsers').textContent = users.filter(u => u.banned).length;
+            }
+
+            loadUsers() {
+                const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+                const tbody = document.getElementById('usersTableBody');
+                
+                tbody.innerHTML = users.map(user => `
+                    <tr id="user-${user.id}">
+                        <td>${user.id}</td>
+                        <td>
+                            <span id="username-${user.id}">${user.username}</span>
+                            <div id="edit-username-${user.id}" class="edit-form" style="display: none;">
+                                <input type="text" value="${user.username}" id="new-username-${user.id}">
+                                <button class="admin-action-btn edit" onclick="saveUsername('${user.id}')">Kaydet</button>
+                                <button class="admin-action-btn" onclick="cancelEdit('username', '${user.id}')">İptal</button>
+                            </div>
+                        </td>
+                        <td>${user.email}</td>
+                        <td>
+                            <span class="user-status ${user.banned ? 'banned' : (user.isAdmin ? 'admin' : 'active')}">
+                                ${user.banned ? 'Yasaklı' : (user.isAdmin ? 'Admin' : 'Aktif')}
+                            </span>
+                        </td>
+                        <td>${new Date(user.registeredAt).toLocaleDateString('tr-TR')}</td>
+                        <td>
+                            <div class="admin-actions">
+                                <button class="admin-action-btn edit" onclick="editUsername('${user.id}')">✏️ İsim</button>
+                                ${!user.isAdmin ? `
+                                    <button class="admin-action-btn ban" onclick="toggleUserBan('${user.id}')">${user.banned ? '✅ Aktif' : '🚫 Yasakla'}</button>
+                                    <button class="admin-action-btn promote" onclick="toggleAdmin('${user.id}')">👑 Admin</button>
+                                ` : ''}
+                                <button class="admin-action-btn delete" onclick="deleteUser('${user.id}')">🗑️ Sil</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            loadComments() {
+                const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+                const tbody = document.getElementById('commentsTableBody');
+                
+                tbody.innerHTML = comments.map(comment => `
+                    <tr>
+                        <td>${comment.id}</td>
+                        <td>${comment.author}</td>
+                        <td style="max-width: 300px; word-wrap: break-word;">${comment.content.substring(0, 100)}${comment.content.length > 100 ? '...' : ''}</td>
+                        <td>${new Date(comment.timestamp).toLocaleDateString('tr-TR')}</td>
+                        <td>
+                            <div class="admin-actions">
+                                <button class="admin-action-btn edit" onclick="editComment('${comment.id}')">✏️ Düzenle</button>
+                                <button class="admin-action-btn delete" onclick="deleteComment('${comment.id}')">🗑️ Sil</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            loadSecurityLogs() {
+                const logs = JSON.parse(localStorage.getItem('securityLogs') || '[]');
+                const tbody = document.getElementById('securityLogsBody');
+                
+                tbody.innerHTML = logs.slice(-50).reverse().map(log => `
+                    <tr>
+                        <td>${new Date(log.timestamp).toLocaleString('tr-TR')}</td>
+                        <td>${log.username || 'Anonim'}</td>
+                        <td>${log.action}</td>
+                        <td>${log.ip}</td>
+                        <td>
+                            <span class="user-status ${log.success ? 'active' : 'banned'}">
+                                ${log.success ? 'Başarılı' : 'Başarısız'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            editUsername(userId) {
+                document.getElementById(`username-${userId}`).style.display = 'none';
+                document.getElementById(`edit-username-${userId}`).style.display = 'block';
+            }
+
+            saveUsername(userId) {
+                const newUsername = document.getElementById(`new-username-${userId}`).value.trim();
+                if (!newUsername) {
+                    showNotification('Kullanıcı adı boş olamaz!', 'error');
+                    return;
+                }
+
+                const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+                const userIndex = users.findIndex(u => u.id === userId);
+                
+                if (userIndex !== -1) {
+                    const oldUsername = users[userIndex].username;
+                    users[userIndex].username = newUsername;
+                    localStorage.setItem('wocyber_users', JSON.stringify(users));
+                    
+                    // Update comments
+                    const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+                    comments.forEach(comment => {
+                        if (comment.author === oldUsername) {
+                            comment.author = newUsername;
+                        }
+                    });
+                    localStorage.setItem('comments', JSON.stringify(comments));
+                    
+                    this.addSecurityLog('Kullanıcı adı değiştirildi', currentUser.username, true);
+                    showNotification('Kullanıcı adı başarıyla güncellendi!', 'success');
+                    this.loadUsers();
+                    this.loadComments();
+                }
+            }
+
+            cancelEdit(type, userId) {
+                document.getElementById(`${type}-${userId}`).style.display = 'block';
+                document.getElementById(`edit-${type}-${userId}`).style.display = 'none';
+            }
+
+            toggleUserBan(userId) {
+                const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+                const userIndex = users.findIndex(u => u.id === userId);
+                
+                if (userIndex !== -1) {
+                    users[userIndex].banned = !users[userIndex].banned;
+                    localStorage.setItem('wocyber_users', JSON.stringify(users));
+                    
+                    this.addSecurityLog(
+                        `Kullanıcı ${users[userIndex].banned ? 'yasaklandı' : 'yasak kaldırıldı'}`, 
+                        currentUser.username, 
+                        true
+                    );
+                    
+                    showNotification(
+                        `Kullanıcı ${users[userIndex].banned ? 'yasaklandı' : 'yasağı kaldırıldı'}!`, 
+                        'success'
+                    );
+                    this.loadUsers();
+                    this.updateStats();
+                }
+            }
+
+            toggleAdmin(userId) {
+                const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+                const userIndex = users.findIndex(u => u.id === userId);
+                
+                if (userIndex !== -1) {
+                    users[userIndex].isAdmin = !users[userIndex].isAdmin;
+                    localStorage.setItem('wocyber_users', JSON.stringify(users));
+                    
+                    this.addSecurityLog(
+                        `Kullanıcı ${users[userIndex].isAdmin ? 'admin yapıldı' : 'admin yetkisi alındı'}`, 
+                        currentUser.username, 
+                        true
+                    );
+                    
+                    showNotification(
+                        `Kullanıcı ${users[userIndex].isAdmin ? 'admin yapıldı' : 'admin yetkisi alındı'}!`, 
+                        'success'
+                    );
+                    this.loadUsers();
+                }
+            }
+
+            deleteUser(userId) {
+                if (!confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) return;
+                
+                const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+                const userIndex = users.findIndex(u => u.id === userId);
+                
+                if (userIndex !== -1) {
+                    const deletedUser = users[userIndex];
+                    users.splice(userIndex, 1);
+                    localStorage.setItem('wocyber_users', JSON.stringify(users));
+                    
+                    this.addSecurityLog(`Kullanıcı silindi: ${deletedUser.username}`, currentUser.username, true);
+                    showNotification('Kullanıcı başarıyla silindi!', 'success');
+                    this.loadUsers();
+                    this.updateStats();
+                }
+            }
+
+            deleteComment(commentId) {
+                if (!confirm('Bu yorumu silmek istediğinizden emin misiniz?')) return;
+                
+                const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+                const commentIndex = comments.findIndex(c => c.id === commentId);
+                
+                if (commentIndex !== -1) {
+                    comments.splice(commentIndex, 1);
+                    localStorage.setItem('comments', JSON.stringify(comments));
+                    
+                    this.addSecurityLog('Yorum silindi', currentUser.username, true);
+                    showNotification('Yorum başarıyla silindi!', 'success');
+                    this.loadComments();
+                    this.updateStats();
+                    commentSystem.loadComments();
+                }
+            }
+
+            addSecurityLog(action, username, success) {
+                const logs = JSON.parse(localStorage.getItem('securityLogs') || '[]');
+                logs.push({
+                    timestamp: Date.now(),
+                    action,
+                    username,
+                    ip: '127.0.0.1', // Simulated IP
+                    success
+                });
+                localStorage.setItem('securityLogs', JSON.stringify(logs.slice(-1000))); // Keep last 1000 logs
+            }
+
+            // New Admin Functions
+            loadAnalytics() {
+                // Simulate analytics data loading
+                console.log('Analytics data loaded');
+            }
+
+            loadContent() {
+                // Simulate content management data loading
+                console.log('Content data loaded');
+            }
+
+            loadSystemInfo() {
+                // Simulate system info loading with real-time updates
+                this.startSystemMonitoring();
+            }
+
+            startSystemMonitoring() {
+                // Simulate real-time system monitoring
+                setInterval(() => {
+                    this.updateSystemStats();
+                }, 5000); // Update every 5 seconds
+            }
+
+            updateSystemStats() {
+                // Simulate dynamic system stats
+                const cpuUsage = Math.floor(Math.random() * 40) + 20; // 20-60%
+                const ramUsage = Math.floor(Math.random() * 30) + 40; // 40-70%
+                const diskUsage = Math.floor(Math.random() * 20) + 35; // 35-55%
+
+                const cpuFill = document.querySelector('.stat-fill[style*="35%"]');
+                const ramFill = document.querySelector('.stat-fill[style*="60%"]');
+                const diskFill = document.querySelector('.stat-fill[style*="45%"]');
+
+                if (cpuFill) {
+                    cpuFill.style.width = cpuUsage + '%';
+                    cpuFill.nextElementSibling.textContent = cpuUsage + '%';
+                }
+                if (ramFill) {
+                    ramFill.style.width = ramUsage + '%';
+                    ramFill.nextElementSibling.textContent = ramUsage + '%';
+                }
+                if (diskFill) {
+                    diskFill.style.width = diskUsage + '%';
+                    diskFill.nextElementSibling.textContent = diskUsage + '%';
+                }
+            }
+        }
+
+        // Security Manager
+        class SecurityManager {
+            constructor() {
+                this.rateLimits = new Map();
+                this.failedAttempts = new Map();
+            }
+
+            checkRateLimit(action, identifier, maxAttempts = 5, windowMs = 300000) {
+                const key = `${action}:${identifier}`;
+                const now = Date.now();
+                
+                if (!this.rateLimits.has(key)) {
+                    this.rateLimits.set(key, []);
+                }
+                
+                const attempts = this.rateLimits.get(key);
+                const validAttempts = attempts.filter(time => now - time < windowMs);
+                
+                if (validAttempts.length >= maxAttempts) {
+                    return false;
+                }
+                
+                validAttempts.push(now);
+                this.rateLimits.set(key, validAttempts);
+                return true;
+            }
+
+            hashPassword(password) {
+                return btoa(password + 'wocyber_salt_2024');
+            }
+
+            verifyPassword(password, hash) {
+                return this.hashPassword(password) === hash;
+            }
+        }
+
+        // Email Service
+        class EmailService {
+            static sendVerificationEmail(email, token) {
+                localStorage.setItem(`email_verification:${email}`, JSON.stringify({
+                    token,
+                    timestamp: Date.now(),
+                    verified: false
+                }));
+                return true;
+            }
+
+            static verifyEmail(email, token) {
+                const verification = JSON.parse(localStorage.getItem(`email_verification:${email}`) || 'null');
+                if (!verification || verification.token !== token) return false;
+                
+                verification.verified = true;
+                localStorage.setItem(`email_verification:${email}`, JSON.stringify(verification));
+                return true;
+            }
+
+            static isEmailVerified(email) {
+                const verification = JSON.parse(localStorage.getItem(`email_verification:${email}`) || 'null');
+                return verification && verification.verified;
+            }
+        }
+
+        // 2FA Service
+        class TwoFactorAuth {
+            static generateSecret() {
+                return otplib.authenticator.generateSecret();
+            }
+
+            static generateQRCode(email, secret) {
+                return otplib.authenticator.keyuri(email, 'WoCyber', secret);
+            }
+
+            static verifyToken(token, secret) {
+                return otplib.authenticator.verify({ token, secret });
+            }
+        }
+
+        // Comment System
+        class CommentSystem {
+            constructor() {
+                this.comments = JSON.parse(localStorage.getItem('comments') || '[]');
+                this.likes = JSON.parse(localStorage.getItem('comment_likes') || '[]');
+            }
+
+            addComment(content, parentId = null) {
+                if (!currentUser) throw new Error('Giriş yapmanız gerekiyor!');
+                if (!EmailService.isEmailVerified(currentUser.email)) {
+                    throw new Error('E-posta doğrulaması gerekiyor!');
+                }
+
+                const comment = {
+                    id: crypto.randomUUID(),
+                    userId: currentUser.id,
+                    userName: currentUser.fullName,
+                    content: this.sanitize(content),
+                    parentId,
+                    createdAt: new Date().toISOString(),
+                    likes: 0,
+                    hearts: 0
+                };
+
+                this.comments.push(comment);
+                this.save();
+                return comment;
+            }
+
+            toggleReaction(commentId, type) {
+                if (!currentUser) throw new Error('Giriş yapmanız gerekiyor!');
+
+                const key = `${commentId}:${currentUser.id}:${type}`;
+                const index = this.likes.findIndex(l => l.key === key);
+
+                if (index >= 0) {
+                    this.likes.splice(index, 1);
+                    this.updateCount(commentId, type, -1);
+                    return false;
+                } else {
+                    this.likes.push({ key, commentId, userId: currentUser.id, type });
+                    this.updateCount(commentId, type, 1);
+                    return true;
+                }
+            }
+
+            updateCount(commentId, type, delta) {
+                const comment = this.comments.find(c => c.id === commentId);
+                if (comment) {
+                    comment[type] = Math.max(0, (comment[type] || 0) + delta);
+                    this.save();
+                }
+            }
+
+            sanitize(content) {
+                return content
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#x27;');
+            }
+
+            save() {
+                localStorage.setItem('comments', JSON.stringify(this.comments));
+                localStorage.setItem('comment_likes', JSON.stringify(this.likes));
+            }
+
+            hasReaction(commentId, type) {
+                if (!currentUser) return false;
+                const key = `${commentId}:${currentUser.id}:${type}`;
+                return this.likes.some(l => l.key === key);
+            }
+
+            toggleReaction(commentId, type) {
+                if (!currentUser) return;
+                
+                const key = `${commentId}:${currentUser.id}:${type}`;
+                const existingIndex = this.likes.findIndex(l => l.key === key);
+                
+                const comment = this.comments.find(c => c.id === commentId);
+                if (!comment) return;
+                
+                if (existingIndex >= 0) {
+                    // Remove reaction
+                    this.likes.splice(existingIndex, 1);
+                    comment[type + 's'] = Math.max(0, (comment[type + 's'] || 0) - 1);
+                } else {
+                    // Add reaction
+                    this.likes.push({ key, timestamp: Date.now() });
+                    comment[type + 's'] = (comment[type + 's'] || 0) + 1;
+                }
+                
+                this.save();
+            }
+
+            getComments() {
+                return this.comments.filter(c => !c.parentId);
+            }
+
+            getReplies(parentId) {
+                return this.comments.filter(c => c.parentId === parentId);
+            }
+
+            loadComments() {
+                const container = document.getElementById('commentsContainer');
+                if (!container) return;
+
+                const topLevelComments = this.getComments();
+                
+                container.innerHTML = topLevelComments.map(comment => 
+                    this.renderComment(comment)
+                ).join('');
+            }
+
+            renderComment(comment) {
+                const replies = this.getReplies(comment.id);
+                const likeCount = this.comments.find(c => c.id === comment.id)?.likes || 0;
+                const heartCount = this.comments.find(c => c.id === comment.id)?.hearts || 0;
+                
+                return `
+                    <div class="comment" id="comment-${comment.id}">
+                        <div class="comment-header">
+                            <div class="comment-avatar">${comment.author?.charAt(0) || 'U'}</div>
+                            <div class="comment-meta">
+                                <div class="comment-author">${comment.author || 'Anonim'}</div>
+                                <div class="comment-date">${new Date(comment.timestamp).toLocaleDateString('tr-TR')}</div>
+                            </div>
+                        </div>
+                        <div class="comment-content">${this.sanitize(comment.content)}</div>
+                        <div class="comment-actions">
+                            <button class="comment-action ${this.hasReaction(comment.id, 'like') ? 'active' : ''}" 
+                                    onclick="likeComment('${comment.id}')">
+                                👍 <span>${likeCount}</span>
+                            </button>
+                            <button class="comment-action ${this.hasReaction(comment.id, 'heart') ? 'active' : ''}" 
+                                    onclick="heartComment('${comment.id}')">
+                                ❤️ <span>${heartCount}</span>
+                            </button>
+                            <button class="comment-action" onclick="replyToComment('${comment.id}')">
+                                💬 Yanıtla
+                            </button>
+                        </div>
+                        ${replies.length > 0 ? `
+                            <div class="comment-replies">
+                                ${replies.map(reply => this.renderComment(reply)).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize services
+        const security = new SecurityManager();
+        const commentSystem = new CommentSystem();
+        const adminPanel = new AdminPanelManager();
+
+        // Modal Management
+        function showModal(modalId) {
+            if (currentModal) closeModal(currentModal);
+            
+            currentModal = modalId;
+            const modal = document.getElementById(modalId);
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Focus management
+            setTimeout(() => {
+                const input = modal.querySelector('input');
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function closeModal(modalId) {
+            if (isSubmitting) return;
+            
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentModal = null;
+        }
+
+        function switchModals(from, to) {
+            const fromElement = document.getElementById(from);
+            const container = fromElement.querySelector('.modal-container');
+            
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                container.classList.add('flipping');
+                setTimeout(() => {
+                    closeModal(from);
+                    setTimeout(() => {
+                        showModal(to);
+                        container.classList.remove('flipping');
+                    }, 300);
+                }, 300);
+            } else {
+                closeModal(from);
+                setTimeout(() => showModal(to), 100);
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && currentModal && !isSubmitting) {
+                closeModal(currentModal);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') && !isSubmitting) {
+                closeModal(currentModal);
+            }
+        });
+
+        // Authentication
+        function handleLogin(event) {
+            event.preventDefault();
+            if (isSubmitting) return;
+            
+            isSubmitting = true;
+            const button = event.target.querySelector('button');
+            const originalText = button.textContent;
+            button.textContent = '🔄 Giriş yapılıyor...';
+            button.disabled = true;
+
+            setTimeout(() => {
+                try {
+                    const username = document.getElementById('loginUsername').value.trim();
+                    const password = document.getElementById('loginPassword').value;
+
+                    if (!security.checkRateLimit('login', username)) {
+                        throw new Error('Çok fazla deneme! 5 dakika bekleyin.');
+                    }
+
+                    const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+                    const user = users.find(u => 
+                        u.username === username && 
+                        security.verifyPassword(password, u.password)
+                    );
+
+                    if (!user) {
+                        throw new Error('Kullanıcı adı veya şifre hatalı!');
+                    }
+
+                    if (!EmailService.isEmailVerified(user.email)) {
+                        throw new Error('E-posta doğrulaması gerekiyor!');
+                    }
+
+                    if (user.twoFactorEnabled) {
+                        show2FAPrompt(user);
+                        return;
+                    }
+
+                    completeLogin(user);
+
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                } finally {
+                    isSubmitting = false;
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }, 1000);
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            if (isSubmitting) return;
+            
+            isSubmitting = true;
+            const button = event.target.querySelector('button');
+            const originalText = button.textContent;
+            button.textContent = '🔄 Kayıt yapılıyor...';
+            button.disabled = true;
+
+            setTimeout(() => {
+                try {
+                    const name = document.getElementById('registerName').value.trim();
+                    const username = document.getElementById('registerUsername').value.trim();
+                    const email = document.getElementById('registerEmail').value.trim();
+                    const password = document.getElementById('registerPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+
+                    if (!name || !username || !email || !password || !confirmPassword) {
+                        throw new Error('Tüm alanları doldurun!');
+                    }
+
+                    if (password !== confirmPassword) {
+                        throw new Error('Şifreler eşleşmiyor!');
+                    }
+
+                    if (password.length < 8) {
+                        throw new Error('Şifre en az 8 karakter olmalı!');
+                    }
+
+                    const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+                    
+                    if (users.find(u => u.username === username)) {
+                        throw new Error('Bu kullanıcı adı zaten kullanılıyor!');
+                    }
+
+                    if (users.find(u => u.email === email)) {
+                        throw new Error('Bu e-posta zaten kayıtlı!');
+                    }
+
+                    const user = {
+                        id: crypto.randomUUID(),
+                        fullName: name,
+                        username,
+                        email,
+                        password: security.hashPassword(password),
+                        twoFactorEnabled: false,
+                        twoFactorSecret: null,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    users.push(user);
+                    localStorage.setItem('wocyber_users', JSON.stringify(users));
+
+                    const token = crypto.randomUUID();
+                    EmailService.sendVerificationEmail(email, token);
+
+                    event.target.reset();
+                    showNotification('Kayıt başarılı! E-posta doğrulaması gerekiyor.', 'success');
+                    
+                    setTimeout(() => {
+                        switchModals('registerModal', 'loginModal');
+                        showEmailVerification(email, token);
+                    }, 1000);
+
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                } finally {
+                    isSubmitting = false;
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }, 1000);
+        }
+
+        function completeLogin(user) {
+            currentUser = user;
+            localStorage.setItem('wocyber_current_user', JSON.stringify(user));
+            closeModal(currentModal);
+            updateUI();
+            showNotification(`Hoş geldiniz, ${user.fullName}!`, 'success');
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('wocyber_current_user');
+            updateUI();
+            showNotification('Başarıyla çıkış yaptınız!', 'success');
+        }
+        
+        // User Settings Functions
+        function showUserMenu() {
+            showModal('userSettingsModal');
+            loadUserSettings();
+        }
+        
+        function loadUserSettings() {
+            if (currentUser) {
+                document.getElementById('userDisplayName').value = currentUser.fullName || '';
+                document.getElementById('userEmail').value = currentUser.email || '';
+            }
+            
+            // Load saved theme
+            const savedTheme = localStorage.getItem('wocyber_theme') || 'light';
+            updateThemeSelector(savedTheme);
+        }
+        
+        function updateThemeSelector(activeTheme) {
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.remove('active');
+                if (option.dataset.theme === activeTheme) {
+                    option.classList.add('active');
+                }
+            });
+        }
+        
+        function changeTheme(themeName) {
+            const root = document.documentElement;
+            
+            switch(themeName) {
+                case 'light':
+                    // Platinum Light Theme
+                    root.style.setProperty('--primary-color', '#f5f5f5');
+                    root.style.setProperty('--secondary-color', '#9ca3af');
+                    root.style.setProperty('--accent-color', '#7c3aed');
+                    root.style.setProperty('--accent-secondary', '#be185d');
+                    root.style.setProperty('--text-primary', '#374151');
+                    root.style.setProperty('--primary-bg', '#f8f9fa');
+                    root.style.setProperty('--card-bg', 'rgba(245, 245, 245, 0.85)');
+                    break;
+                case 'dark':
+                    // Soft Dark Theme
+                    root.style.setProperty('--primary-color', '#1f2937');
+                    root.style.setProperty('--secondary-color', '#6b7280');
+                    root.style.setProperty('--accent-color', '#c084fc');
+                    root.style.setProperty('--accent-secondary', '#f472b6');
+                    root.style.setProperty('--text-primary', '#f9fafb');
+                    root.style.setProperty('--primary-bg', '#111827');
+                    root.style.setProperty('--card-bg', 'rgba(31, 41, 55, 0.85)');
+                    break;
+                case 'blue':
+                    // Ocean Blue Theme
+                    root.style.setProperty('--primary-color', '#e0f2fe');
+                    root.style.setProperty('--secondary-color', '#0891b2');
+                    root.style.setProperty('--accent-color', '#7c3aed');
+                    root.style.setProperty('--accent-secondary', '#db2777');
+                    root.style.setProperty('--text-primary', '#0c4a6e');
+                    root.style.setProperty('--primary-bg', '#f0f9ff');
+                    root.style.setProperty('--card-bg', 'rgba(224, 242, 254, 0.85)');
+                    break;
+                case 'green':
+                    // Nature Green Theme
+                    root.style.setProperty('--primary-color', '#ecfdf5');
+                    root.style.setProperty('--secondary-color', '#059669');
+                    root.style.setProperty('--accent-color', '#8b5cf6');
+                    root.style.setProperty('--accent-secondary', '#ec4899');
+                    root.style.setProperty('--text-primary', '#064e3b');
+                    root.style.setProperty('--primary-bg', '#f0fdf4');
+                    root.style.setProperty('--card-bg', 'rgba(236, 253, 245, 0.85)');
+                    break;
+            }
+            
+            localStorage.setItem('wocyber_theme', themeName);
+            updateThemeSelector(themeName);
+            showNotification(`${themeName.charAt(0).toUpperCase() + themeName.slice(1)} tema uygulandı!`, 'success');
+        }
+        
+        function saveUserSettings() {
+            if (!currentUser) return;
+            
+            const displayName = document.getElementById('userDisplayName').value;
+            const email = document.getElementById('userEmail').value;
+            
+            if (displayName) {
+                currentUser.fullName = displayName;
+            }
+            if (email) {
+                currentUser.email = email;
+            }
+            
+            // Save to localStorage
+            const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            if (userIndex !== -1) {
+                users[userIndex] = currentUser;
+                localStorage.setItem('wocyber_users', JSON.stringify(users));
+                localStorage.setItem('wocyber_current_user', JSON.stringify(currentUser));
+            }
+            
+            updateUI();
+            showNotification('Ayarlarınız başarıyla kaydedildi!', 'success');
+            closeModal('userSettingsModal');
+        }
+
+        function updateUI() {
+            const navButtons = document.getElementById('navButtons');
+            const commentForm = document.getElementById('commentForm');
+            const loginPrompt = document.getElementById('loginPrompt');
+
+            if (currentUser) {
+                navButtons.innerHTML = `
+                    <span style="color: var(--text-secondary);">Merhaba, ${currentUser.fullName}</span>
+                    ${currentUser.isAdmin ? '<button class="nav-btn" onclick="toggleAdminPanel()">👑 Admin Panel</button>' : ''}
+                    <button class="nav-btn" onclick="showUserMenu()">⚙️ Ayarlar</button>
+                    <button class="nav-btn" onclick="logout()">🚪 Çıkış</button>
+                `;
+                commentForm.style.display = 'block';
+                loginPrompt.style.display = 'none';
+            } else {
+                navButtons.innerHTML = `
+                    <button class="nav-btn" onclick="showModal('loginModal')">🔐 Giriş Yap</button>
+                    <button class="nav-btn" onclick="showModal('registerModal')">📝 Kayıt Ol</button>
+                `;
+                commentForm.style.display = 'none';
+                loginPrompt.style.display = 'block';
+            }
+
+            commentSystem.loadComments();
+        }
+
+        // Admin Panel Functions
+        function toggleAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            if (panel.classList.contains('active')) {
+                adminPanel.hidePanel();
+            } else {
+                adminPanel.showPanel();
+            }
+        }
+
+        function showAdminTab(tabName) {
+            adminPanel.showTab(tabName);
+        }
+
+        function editUsername(userId) {
+            adminPanel.editUsername(userId);
+        }
+
+        function saveUsername(userId) {
+            adminPanel.saveUsername(userId);
+        }
+
+        function cancelEdit(type, userId) {
+            adminPanel.cancelEdit(type, userId);
+        }
+
+        function toggleUserBan(userId) {
+            adminPanel.toggleUserBan(userId);
+        }
+
+        function toggleAdmin(userId) {
+            adminPanel.toggleAdmin(userId);
+        }
+
+        function deleteUser(userId) {
+            adminPanel.deleteUser(userId);
+        }
+
+        function deleteComment(commentId) {
+            adminPanel.deleteComment(commentId);
+        }
+
+        function editComment(commentId) {
+            const newContent = prompt('Yeni yorum içeriği:');
+            if (newContent && newContent.trim()) {
+                const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+                const commentIndex = comments.findIndex(c => c.id === commentId);
+                
+                if (commentIndex !== -1) {
+                    comments[commentIndex].content = newContent.trim();
+                    comments[commentIndex].edited = true;
+                    comments[commentIndex].editedAt = Date.now();
+                    localStorage.setItem('comments', JSON.stringify(comments));
+                    
+                    adminPanel.addSecurityLog('Yorum düzenlendi', currentUser.username, true);
+                    showNotification('Yorum başarıyla düzenlendi!', 'success');
+                    adminPanel.loadComments();
+                    commentSystem.loadComments();
+                }
+            }
+        }
+
+        function saveSettings() {
+            const siteTitle = document.getElementById('siteTitle').value;
+            const siteDescription = document.getElementById('siteDescription').value;
+            const commentsEnabled = document.getElementById('commentsEnabled').value === 'true';
+            const registrationEnabled = document.getElementById('registrationEnabled').value === 'true';
+            
+            const settings = {
+                siteTitle,
+                siteDescription,
+                commentsEnabled,
+                registrationEnabled
+            };
+            
+            localStorage.setItem('siteSettings', JSON.stringify(settings));
+            adminPanel.addSecurityLog('Site ayarları güncellendi', currentUser.username, true);
+            showNotification('Ayarlar başarıyla kaydedildi!', 'success');
+        }
+
+        // System Management Functions
+        function clearCache() {
+            // Simulate cache clearing
+            const btn = event.target;
+            btn.innerHTML = '🔄 Temizleniyor...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = '✅ Temizlendi';
+                showNotification('Cache başarıyla temizlendi!', 'success');
+                
+                setTimeout(() => {
+                    btn.innerHTML = '🗑️ Cache Temizle';
+                    btn.disabled = false;
+                }, 2000);
+            }, 1500);
+        }
+
+        function optimizeDatabase() {
+            const btn = event.target;
+            btn.innerHTML = '⚙️ Optimize ediliyor...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = '✅ Optimize edildi';
+                showNotification('Veritabanı optimize edildi!', 'success');
+                
+                setTimeout(() => {
+                    btn.innerHTML = '🔧 Veritabanı Optimizasyonu';
+                    btn.disabled = false;
+                }, 2000);
+            }, 2000);
+        }
+
+        function generateBackup() {
+            const btn = event.target;
+            btn.innerHTML = '💾 Oluşturuluyor...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                const backup = {
+                    users: localStorage.getItem('wocyber_users'),
+                    comments: localStorage.getItem('comments'),
+                    settings: localStorage.getItem('siteSettings'),
+                    timestamp: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `wocyber-backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                
+                btn.innerHTML = '✅ Yedek Oluşturuldu';
+                showNotification('Yedek dosyası indirildi!', 'success');
+                
+                setTimeout(() => {
+                    btn.innerHTML = '💾 Yedek Oluştur';
+                    btn.disabled = false;
+                }, 2000);
+            }, 1000);
+        }
+
+        function checkUpdates() {
+            const btn = event.target;
+            btn.innerHTML = '🔍 Kontrol ediliyor...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = '✅ Güncel';
+                showNotification('Sistem güncel! 🚀', 'success');
+                
+                setTimeout(() => {
+                    btn.innerHTML = '🔄 Güncellemeleri Kontrol Et';
+                    btn.disabled = false;
+                }, 2000);
+            }, 1500);
+        }
+
+        function addCategory() {
+            const categoryName = prompt('Yeni kategori adı:');
+            if (categoryName && categoryName.trim()) {
+                const categoryList = document.querySelector('.category-list');
+                const newTag = document.createElement('span');
+                newTag.className = 'category-tag';
+                newTag.textContent = categoryName.trim();
+                categoryList.appendChild(newTag);
+                showNotification('Kategori eklendi!', 'success');
+            }
+        }
+
+        // Blog Data and Functions
+        const blogData = {
+            articles: [
+                {
+                    id: 1,
+                    title: "SQL Injection Saldırıları ve Korunma",
+                    excerpt: "SQL injection saldırılarından korunmak için en etkili yöntemler ve best practices...",
+                    category: "web-security",
+                    author: "Security Expert",
+                    date: "2025-08-13",
+                    readTime: "10 dk",
+                    featured: false
+                },
+                {
+                    id: 2,
+                    title: "OWASP Top 10 2023 Güvenlik Riskleri",
+                    excerpt: "Web uygulamalarında en yaygın güvenlik açıkları ve çözüm önerileri...",
+                    category: "web-security",
+                    author: "OWASP Specialist",
+                    date: "2025-08-12",
+                    readTime: "15 dk",
+                    featured: false
+                },
+                {
+                    id: 3,
+                    title: "Burp Suite ile Web Uygulaması Test Etme",
+                    excerpt: "Burp Suite professional kullanarak web güvenlik testleri nasıl yapılır...",
+                    category: "penetration-testing",
+                    author: "Pen Tester",
+                    date: "2025-08-11",
+                    readTime: "18 dk",
+                    featured: false
+                },
+                {
+                    id: 4,
+                    title: "Nmap ile Ağ Keşfi ve Port Tarama",
+                    excerpt: "Nmap kullanarak etkili ağ tarama teknikleri ve güvenlik açığı tespiti...",
+                    category: "penetration-testing",
+                    author: "Network Security",
+                    date: "2025-08-10",
+                    readTime: "12 dk",
+                    featured: false
+                },
+                {
+                    id: 5,
+                    title: "HackerOne'da İlk Bug Bounty Avcılığı",
+                    excerpt: "Bug bounty platformlarında nasıl başlanır ve hangi stratejiler kullanılır...",
+                    category: "bug-bounty",
+                    author: "Bug Hunter",
+                    date: "2025-08-09",
+                    readTime: "14 dk",
+                    featured: false
+                },
+                {
+                    id: 6,
+                    title: "Mobile Uygulamalarda Bug Bounty",
+                    excerpt: "Android ve iOS uygulamalarında güvenlik açığı arama teknikleri...",
+                    category: "bug-bounty",
+                    author: "Mobile Security",
+                    date: "2025-08-08",
+                    readTime: "16 dk",
+                    featured: false
+                },
+                {
+                    id: 7,
+                    title: "Wireshark ile Trafik Analizi",
+                    excerpt: "Ağ trafiğini analiz etme ve güvenlik olaylarını tespit etme teknikleri...",
+                    category: "forensics",
+                    author: "Digital Forensics",
+                    date: "2025-08-07",
+                    readTime: "20 dk",
+                    featured: false
+                },
+                {
+                    id: 8,
+                    title: "Memory Forensics ile Malware Tespiti",
+                    excerpt: "RAM analizi yaparak gizli malware'leri ve APT saldırılarını tespit etme...",
+                    category: "forensics",
+                    author: "Forensics Expert",
+                    date: "2025-08-06",
+                    readTime: "25 dk",
+                    featured: false
+                },
+                {
+                    id: 9,
+                    title: "YARA Rules ile Malware Avcılığı",
+                    excerpt: "YARA kuralları yazarak malware aileleri ve varyantlarını tespit etme...",
+                    category: "malware-analysis",
+                    author: "Malware Researcher",
+                    date: "2025-08-05",
+                    readTime: "22 dk",
+                    featured: false
+                },
+                {
+                    id: 10,
+                    title: "Ghidra ile Reverse Engineering",
+                    excerpt: "NSA'nın açık kaynak reverse engineering aracı ile malware analizi...",
+                    category: "malware-analysis",
+                    author: "Reverse Engineer",
+                    date: "2025-08-04",
+                    readTime: "30 dk",
+                    featured: false
+                },
+                {
+                    id: 11,
+                    title: "Kali Linux Essential Tools 2025",
+                    excerpt: "Penetration testing için en önemli Kali Linux araçları ve kullanımları...",
+                    category: "tools",
+                    author: "Kali Expert",
+                    date: "2025-08-03",
+                    readTime: "15 dk",
+                    featured: false
+                },
+                {
+                    id: 12,
+                    title: "Docker Container Security",
+                    excerpt: "Docker container'larını güvenli hale getirme ve güvenlik açığı tarama...",
+                    category: "tools",
+                    author: "DevSecOps",
+                    date: "2025-08-02",
+                    readTime: "18 dk",
+                    featured: false
+                }
+            ]
+        };
+
+        // Blog Functions
+        function filterByCategory(category) {
+            // Update active category link in header navigation
+            document.querySelectorAll('.header-nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the clicked link
+            const clickedLink = event.target.closest('.header-nav-link');
+            if (clickedLink) {
+                clickedLink.classList.add('active');
+            }
+
+            // Filter articles
+            const articlesGrid = document.getElementById('articlesGrid');
+            const filteredArticles = category === 'all' 
+                ? blogData.articles 
+                : blogData.articles.filter(article => article.category === category);
+
+            renderArticles(filteredArticles);
+        }
+
+        function renderArticles(articles) {
+            const articlesGrid = document.getElementById('articlesGrid');
+            
+            articlesGrid.innerHTML = articles.map(article => `
+                <div class="article-card" data-category="${article.category}">
+                    <h3>${getCategoryIcon(article.category)} ${article.title}</h3>
+                    <p>${article.excerpt}</p>
+                    <div class="article-meta">
+                        <span>📅 ${formatDate(article.date)}</span>
+                        <span>👤 ${article.author}</span>
+                        <span>⏱️ ${article.readTime} okuma</span>
+                    </div>
+                    <a href="#" class="article-link">Devamını Oku →</a>
+                </div>
+            `).join('');
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'bug-bounty': '🐛',
+                'penetration-testing': '🔧',
+                'malware-analysis': '🔍',
+                'web-security': '🛡️',
+                'forensics': '🕵️',
+                'tools': '⚙️'
+            };
+            return icons[category] || '📝';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+
+        // Initialize blog on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load all articles initially
+            renderArticles(blogData.articles);
+        });
+
+        // Comment Functions
+        function submitComment() {
+            const textarea = document.getElementById('commentTextarea');
+            const content = textarea.value.trim();
+
+            if (!content) {
+                showNotification('Yorum boş olamaz!', 'error');
+                return;
+            }
+
+            if (!security.checkRateLimit('comment', currentUser.id)) {
+                showNotification('Çok hızlı yorum yapıyorsunuz!', 'error');
+                return;
+            }
+
+            try {
+                commentSystem.addComment(content);
+                textarea.value = '';
+                commentSystem.loadComments();
+                showNotification('Yorum başarıyla eklendi!', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        function loadComments() {
+            const container = document.getElementById('commentsContainer');
+            const comments = commentSystem.getComments();
+
+            if (comments.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Henüz yorum yok. İlk yorumu siz yapın!</p>';
+                return;
+            }
+
+            container.innerHTML = comments.map(comment => {
+                const replies = commentSystem.getReplies(comment.id);
+                return `
+                    <div class="comment">
+                        <div class="comment-header">
+                            <div class="comment-avatar">${comment.userName.split(' ').map(n => n[0]).join('')}</div>
+                            <div class="comment-meta">
+                                <div class="comment-author">${comment.userName}</div>
+                                <div class="comment-date">${new Date(comment.createdAt).toLocaleString('tr-TR')}</div>
+                            </div>
+                        </div>
+                        <div class="comment-content">${comment.content}</div>
+                        <div class="comment-actions">
+                            <button class="comment-action ${commentSystem.hasReaction(comment.id, 'likes') ? 'active' : ''}" 
+                                    onclick="toggleReaction('${comment.id}', 'likes')">
+                                👍 <span>${comment.likes || 0}</span>
+                            </button>
+                            <button class="comment-action ${commentSystem.hasReaction(comment.id, 'hearts') ? 'active' : ''}" 
+                                    onclick="toggleReaction('${comment.id}', 'hearts')">
+                                ❤️ <span>${comment.hearts || 0}</span>
+                            </button>
+                            <button class="comment-action" onclick="replyToComment('${comment.id}')">
+                                💬 Yanıtla
+                            </button>
+                        </div>
+                        ${replies.length > 0 ? `
+                            <div class="comment-replies">
+                                ${replies.map(reply => `
+                                    <div class="comment">
+                                        <div class="comment-header">
+                                            <div class="comment-avatar">${reply.userName.split(' ').map(n => n[0]).join('')}</div>
+                                            <div class="comment-meta">
+                                                <div class="comment-author">${reply.userName}</div>
+                                                <div class="comment-date">${new Date(reply.createdAt).toLocaleString('tr-TR')}</div>
+                                            </div>
+                                        </div>
+                                        <div class="comment-content">${reply.content}</div>
+                                        <div class="comment-actions">
+                                            <button class="comment-action ${commentSystem.hasReaction(reply.id, 'likes') ? 'active' : ''}" 
+                                                    onclick="toggleReaction('${reply.id}', 'likes')">
+                                                👍 <span>${reply.likes || 0}</span>
+                                            </button>
+                                            <button class="comment-action ${commentSystem.hasReaction(reply.id, 'hearts') ? 'active' : ''}" 
+                                                    onclick="toggleReaction('${reply.id}', 'hearts')">
+                                                ❤️ <span>${reply.hearts || 0}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function likeComment(commentId) {
+            if (!currentUser) {
+                showNotification('Giriş yapmanız gerekiyor!', 'error');
+                return;
+            }
+            commentSystem.toggleReaction(commentId, 'like');
+            commentSystem.loadComments();
+        }
+
+        function heartComment(commentId) {
+            if (!currentUser) {
+                showNotification('Giriş yapmanız gerekiyor!', 'error');
+                return;
+            }
+            commentSystem.toggleReaction(commentId, 'heart');
+            commentSystem.loadComments();
+        }
+
+        function replyToComment(commentId) {
+            if (!currentUser) {
+                showNotification('Giriş yapmanız gerekiyor!', 'error');
+                return;
+            }
+            const content = prompt('Yanıtınızı yazın:');
+            if (content && content.trim()) {
+                try {
+                    commentSystem.addComment(content.trim(), commentId);
+                    commentSystem.loadComments();
+                    showNotification('Yanıt başarıyla eklendi!', 'success');
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
+            }
+        }
+
+        function toggleReaction(commentId, type) {
+            if (!currentUser) {
+                showNotification('Giriş yapmanız gerekiyor!', 'error');
+                return;
+            }
+
+            try {
+                const isActive = commentSystem.toggleReaction(commentId, type);
+                loadComments();
+                showNotification(isActive ? 'Tepki eklendi!' : 'Tepki kaldırıldı!', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        function replyToComment(commentId) {
+            if (!currentUser) {
+                showNotification('Giriş yapmanız gerekiyor!', 'error');
+                return;
+            }
+
+            const content = prompt('Yanıtınızı yazın:');
+            if (!content) return;
+
+            try {
+                commentSystem.addComment(content, commentId);
+                loadComments();
+                showNotification('Yanıt eklendi!', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function showEmailVerification(email, token) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <h2>📧 E-posta Doğrulama</h2>
+                        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                    </div>
+                    <div style="text-align: center; padding: 1rem;">
+                        <p><strong>${email}</strong> adresine doğrulama e-postası gönderildi.</p>
+                        <p style="margin: 1rem 0;">Demo için aşağıdaki butona tıklayın:</p>
+                        <button class="form-button" onclick="verifyEmailDemo('${email}', '${token}')">
+                            ✅ E-postayı Doğrula (Demo)
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function verifyEmailDemo(email, token) {
+            if (EmailService.verifyEmail(email, token)) {
+                showNotification('E-posta başarıyla doğrulandı!', 'success');
+                document.querySelector('.modal-overlay:last-child').remove();
+            }
+        }
+
+        function show2FAPrompt(user) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <h2>🔐 İki Faktörlü Doğrulama</h2>
+                        <button class="modal-close" onclick="this.closest('.modal-overlay').remove(); isSubmitting = false;">&times;</button>
+                    </div>
+                    <form onsubmit="verify2FA(event, '${user.id}')">
+                        <div class="form-group">
+                            <label class="form-label">Doğrulama Kodu</label>
+                            <input type="text" id="twoFactorCode" class="form-input" placeholder="123456" maxlength="6" required>
+                        </div>
+                        <button type="submit" class="form-button">🔓 Doğrula</button>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function verify2FA(event, userId) {
+            event.preventDefault();
+            const code = document.getElementById('twoFactorCode').value;
+            const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+            const user = users.find(u => u.id === userId);
+
+            if (user && TwoFactorAuth.verifyToken(code, user.twoFactorSecret)) {
+                document.querySelector('.modal-overlay:last-child').remove();
+                completeLogin(user);
+            } else {
+                showNotification('Geçersiz doğrulama kodu!', 'error');
+            }
+        }
+
+        function showUserMenu() {
+            // User settings modal would go here
+            showNotification('Ayarlar yakında eklenecek!', 'warning');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Welcome Screen Animation
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            
+            // Show welcome screen for 3 seconds then fade out
+            setTimeout(() => {
+                welcomeScreen.style.animation = 'welcomeFade 3s ease-in-out forwards';
+                welcomeScreen.addEventListener('animationend', () => {
+                    welcomeScreen.style.display = 'none';
+                });
+            }, 500); // Small delay before starting animation
+
+            // Create default admin user if doesn't exist
+            const users = JSON.parse(localStorage.getItem('wocyber_users') || '[]');
+            if (!users.find(u => u.isAdmin)) {
+                const adminUser = {
+                    id: 'admin-' + Date.now(),
+                    username: 'admin',
+                    fullName: 'Site Yöneticisi',
+                    email: 'admin@wocyber.com',
+                    password: security.hashPassword('admin123'), // Default password: admin123
+                    isAdmin: true,
+                    emailVerified: true,
+                    twoFactorEnabled: false,
+                    registeredAt: Date.now(),
+                    banned: false
+                };
+                users.push(adminUser);
+                localStorage.setItem('wocyber_users', JSON.stringify(users));
+                
+                // Mark admin email as verified
+                localStorage.setItem(`email_verification:admin@wocyber.com`, JSON.stringify({
+                    token: 'admin-verified',
+                    timestamp: Date.now(),
+                    verified: true
+                }));
+                
+                console.log('🛡️ Default admin created: username=admin, password=admin123');
+            }
+            
+            const savedUser = localStorage.getItem('wocyber_current_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+            }
+            updateUI();
+        });
+    </script>
+
+    <!-- Theme Selector -->
+    <div class="theme-selector">
+    <script>
+        // Theme system
+        const themes = {
+            purple: {
+                '--primary-color': '#4c327a',
+                '--secondary-color': '#f2a2bf',
+                '--neutral-color': '#cccbc8',
+                '--primary-bg': 'linear-gradient(135deg, #2d1b3d 0%, #4c327a 50%, #6d4895 100%)',
+                '--card-bg': 'rgba(76, 50, 122, 0.15)',
+                '--card-bg-solid': 'rgba(76, 50, 122, 0.9)',
+                '--accent-primary': '#f2a2bf',
+                '--accent-secondary': '#4c327a'
+            },
+            blue: {
+                '--primary-color': '#2563eb',
+                '--secondary-color': '#3b82f6',
+                '--neutral-color': '#e2e8f0',
+                '--primary-bg': 'linear-gradient(135deg, #1e293b 0%, #2563eb 50%, #3b82f6 100%)',
+                '--card-bg': 'rgba(37, 99, 235, 0.15)',
+                '--card-bg-solid': 'rgba(37, 99, 235, 0.9)',
+                '--accent-primary': '#3b82f6',
+                '--accent-secondary': '#2563eb'
+            },
+            green: {
+                '--primary-color': '#059669',
+                '--secondary-color': '#10b981',
+                '--neutral-color': '#d1fae5',
+                '--primary-bg': 'linear-gradient(135deg, #064e3b 0%, #059669 50%, #10b981 100%)',
+                '--card-bg': 'rgba(5, 150, 105, 0.15)',
+                '--card-bg-solid': 'rgba(5, 150, 105, 0.9)',
+                '--accent-primary': '#10b981',
+                '--accent-secondary': '#059669'
+            }
+        };
+
+        function changeTheme(themeName) {
+            const theme = themes[themeName];
+            if (!theme) return;
+
+            const root = document.documentElement;
+            Object.entries(theme).forEach(([property, value]) => {
+                root.style.setProperty(property, value);
+            });
+
+            // Update active theme selector
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`[data-theme="${themeName}"]`).classList.add('active');
+
+            // Save theme preference
+            localStorage.setItem('wocyber_theme', themeName);
+        }
+
+        // Initialize app
+        function initializeApp() {
+            // Load saved theme
+            const savedTheme = localStorage.getItem('wocyber_theme') || 'light';
+            changeTheme(savedTheme);
+            
+            // Check if user is logged in
+            const savedUser = localStorage.getItem('wocyber_current_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateUI();
+            }
+            
+            // Initialize blog data if not exists
+            if (!localStorage.getItem('wocyber_blog_data')) {
+                localStorage.setItem('wocyber_blog_data', JSON.stringify(blogData));
+            }
+        }
+
+        // Date Time Update Function
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            const dateTimeString = now.toLocaleDateString('tr-TR', options);
+            const dateTimeElement = document.getElementById('currentDateTime');
+            if (dateTimeElement) {
+                dateTimeElement.textContent = dateTimeString;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            updateDateTime();
+            // Update date/time every second
+            setInterval(updateDateTime, 1000);
+        });
+    </script>
+</body>
+</html>
